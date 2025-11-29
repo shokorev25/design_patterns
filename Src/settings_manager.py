@@ -7,9 +7,9 @@ from Src.Core.response_formats import response_formats
 import json
 from datetime import datetime
 from Src.Core.abstract_manager import abstract_manager
-
+from Src.Logics.convert_factory import convert_factory
 ####################################################3
-# Менеджер настроек. 
+# Менеджер настроек.
 # Предназначен для управления настройками и хранения параметров приложения
 class settings_manager(abstract_manager):
 
@@ -20,8 +20,8 @@ class settings_manager(abstract_manager):
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(settings_manager, cls).__new__(cls)
-        return cls.instance 
-    
+        return cls.instance
+   
     def __init__(self):
         self.__set_default()
 
@@ -43,7 +43,7 @@ class settings_manager(abstract_manager):
                 if "company" in settings.keys():
                     data = settings["company"]
                     result = self.__deserialize(data)
-                
+               
                 # Формат по умолчанию
                 if "default_format" in settings.keys() and result == True:
                     data = settings["default_format"]
@@ -60,8 +60,8 @@ class settings_manager(abstract_manager):
             return False
         except:
             return False
-        
-    # Обработать полученный словарь    
+       
+    # Обработать полученный словарь
     def __deserialize(self, data: dict) -> bool:
         validator.validate(data, dict)
 
@@ -72,8 +72,7 @@ class settings_manager(abstract_manager):
             for key in matching_keys:
                 setattr(self.__settings.company, key, data[key])
         except:
-            return False        
-
+            return False
         return True
 
     # Параметры настроек по умолчанию
@@ -81,11 +80,21 @@ class settings_manager(abstract_manager):
         company = company_model()
         company.name = "Рога и копыта"
         company.inn = -1
-        
+       
         self.__settings = settings_model()
         self.__settings.company = company
 
-        
-
-
-
+    def save(self) -> bool:
+        if self.file_name == "":
+            raise operation_exception("No settings file specified!")
+        data = {}
+        factory = convert_factory()
+        data['company'] = factory.serialize(self.settings.company)
+        data['default_format'] = self.settings.default_response_format
+        data['block_period'] = self.settings.block_period.strftime("%Y-%m-%d")
+        try:
+            with open(self.file_name, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+            return True
+        except:
+            return False

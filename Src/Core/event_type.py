@@ -32,5 +32,19 @@ class event_type:
             result.append(key)
 
         return result
+   
+    @staticmethod
+    def delete_group() -> str:
+        return "delete_group"
 
-    
+    @staticmethod
+    def delete_range() -> str:
+        return "delete_range"
+
+    @staticmethod
+    def delete_nomenclature() -> str:
+        return "delete_nomenclature"
+
+    @staticmethod
+    def delete_storage() -> str:
+        return "delete_storage"

@@ -34,29 +34,27 @@ class start_manager(abstract_manager):
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(start_manager, cls).__new__(cls)
-        return cls.instance 
-
-
-    # Информация об ошибке    
+        return cls.instance
+    
+    # Информация об ошибке
     @property
     def error_message(self) -> str:
-        return self.__error_message    
-
-
+        return self.__error_message
+    
     # Загрузить стартовые данные из файла
     def load(self) -> bool:
         if self.file_name == "":
             raise operation_exception("Не найден файл с данными по умолчанию!")
 
         try:
-            with open( self.file_name, 'r') as file_instance:
+        
+            with open( self.file_name, 'r', encoding='utf-8') as file_instance:
                 data = json.load(file_instance)
                 return self.deserialize(data)
         except Exception as e:
             self.__error_message = str(e)
             return False
-        
-        
+       
     # Сохранить элемент в репозитории
     def __save_item_to_reposity(self, key:str, dto, item):
         validator.validate(key, str)
@@ -64,13 +62,13 @@ class start_manager(abstract_manager):
         self.__cache.setdefault(dto.id, item)
         self.__repo.data[ key ].append(item)
 
-    # Загрузить единицы измерений   
+    # Загрузить единицы измерений
     def __deserialize_ranges(self, data: dict) -> bool:
         validator.validate(data, dict)
-        ranges = data['ranges'] if 'ranges' in data else []    
+        ranges = data['ranges'] if 'ranges' in data else []
         if len(ranges) == 0:
             return False
-         
+        
         for range in ranges:
             dto = range_dto().create(range)
             item = range_model.from_dto(dto, self.__cache)
@@ -81,58 +79,53 @@ class start_manager(abstract_manager):
     # Загрузить группы номенклатуры
     def __deserialize_groups(self, data: dict) -> bool:
         validator.validate(data, dict)
-        categories =  data['categories'] if 'categories' in data else []    
+        categories = data['categories'] if 'categories' in data else []
         if len(categories) == 0:
             return False
-
-        for category in  categories:
-            dto = category_dto().create(category)    
+        for category in categories:
+            dto = category_dto().create(category)
             item = group_model.from_dto(dto, self.__cache )
             self.__save_item_to_reposity( reposity_manager.group_key(), dto, item )
 
         return True
-    
+   
     # Загрузить склады
     def __deserialize_storages(self, data:dict) -> bool:
         validator.validate(data, dict)
-        storages = data['storages'] if 'storages' in data else []    
+        storages = data['storages'] if 'storages' in data else []
         if len(storages) == 0:
             return False
-        
+       
         for storage in storages:
             dto = storage_dto().create(storage)
             item = storage_model.from_dto(dto, self.__cache )
             self.__save_item_to_reposity( reposity_manager.storage_key(), dto, item )
-
-        return True    
-
+        return True
+    
     # Загрузить тестовые транзакции
     def __deserialize_transactions(self, data:list) -> bool:
         validator.validate(data, list)
         if len(data) == 0:
             return False
-        
+       
         for transaction in data:
             dto = transaction_dto().create(transaction)
             item = transaction_model.from_dto(dto, self.__cache )
             self.__save_item_to_reposity( reposity_manager.transaction_key(), dto, item )
-
-        return True    
-
+        return True
+    
     # Загрузить номенклатуру
-    def __deserialize_nomenclatures(   self, data: dict) -> bool:
-        validator.validate(data, dict)      
-        nomenclatures = data['nomenclatures'] if 'nomenclatures' in data else []   
+    def __deserialize_nomenclatures( self, data: dict) -> bool:
+        validator.validate(data, dict)
+        nomenclatures = data['nomenclatures'] if 'nomenclatures' in data else []
         if len(nomenclatures) == 0:
             return False
-         
+        
         for nomenclature in nomenclatures:
             dto = nomenclature_dto().create(nomenclature)
             item = nomenclature_model.from_dto(dto, self.__cache)
             self.__save_item_to_reposity( reposity_manager.nomenclature_key(), dto, item )
-
-        return True        
-
+        return True
     # Обработать справочники
     def __deserialize_references(self, data:dict) -> bool:
         validator.validate(data, dict)
@@ -140,8 +133,8 @@ class start_manager(abstract_manager):
         try:
             self.__deserialize_ranges(data)
             self.__deserialize_groups(data)
-            self.__deserialize_nomenclatures(data) 
-            self.__deserialize_storages(data)       
+            self.__deserialize_nomenclatures(data)
+            self.__deserialize_storages(data)
             return True
         except Exception as e:
             self.__error_message = str(e)
@@ -153,15 +146,14 @@ class start_manager(abstract_manager):
 
         if len(data) == 0:
             return False
-         
+        
         for receipt in data:
             dto = receipt_dto().create(receipt)
             item = receipt_model.from_dto(dto, self.__cache)
             self.__save_item_to_reposity( reposity_manager.receipt_key(), dto, item )
             return True
-            
-
-    # Обработать полученный словарь    
+           
+    # Обработать полученный словарь
     def deserialize(self, data: dict) -> bool:
         validator.validate(data, dict)
         loaded_references = True
@@ -176,13 +168,11 @@ class start_manager(abstract_manager):
         # Обработать рецепты
         if "default_receipts" in data.keys():
                 default_receipts = data["default_receipts"]
-                loaded_receipts = self.__deserialize_receipts(default_receipts)  
-
+                loaded_receipts = self.__deserialize_receipts(default_receipts)
         # Загрузить транзакции
         if "default_transactions" in data.keys():
                 default_transactions = data["default_transactions"]
-                loaded_transactions = self.__deserialize_transactions(default_transactions)             
-
+                loaded_transactions = self.__deserialize_transactions(default_transactions)
         return loaded_references and loaded_receipts and loaded_transactions
 
     """
@@ -190,8 +180,7 @@ class start_manager(abstract_manager):
     """
     @property
     def data(self):
-        return self.__repo.data   
-
+        return self.__repo.data
     """
     Основной метод для генерации эталонных данных
     """
@@ -199,6 +188,5 @@ class start_manager(abstract_manager):
         self.file_name = "default.json"
         result = self.load()
         if result == False:
-            raise operation_exception(f"Невозможно сформировать стартовый набор данных!\nОписание: {self.error_message}") 
-        
-
+            raise operation_exception(f"Невозможно сформировать стартовый набор данных!\nОписание: {self.error_message}")
+       
