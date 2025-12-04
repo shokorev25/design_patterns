@@ -6,18 +6,19 @@ from Src.Dtos.category_dto import category_dto
 Модель группы номенклатуры
 """
 class group_model(entity_model):
-   
-
+  
     """
     Фабричный метод из Dto
     """
     @staticmethod
     def from_dto(dto:abstract_dto, cache:dict):
-        item  = group_model()
+        item = group_model()
         item.name = dto.name
-        item.unique_code = dto.id
+        if dto.id.strip() != "":
+            item.unique_code = dto.id
+
         return item
-    
+   
     """
     Перевести доменную модель в Dto
     """
@@ -26,13 +27,3 @@ class group_model(entity_model):
         dto.name = self.name
         dto.id = self.unique_code
         return dto
-
-
-
-    
-    
-
-    
-
-
-    

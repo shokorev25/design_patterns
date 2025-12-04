@@ -10,8 +10,7 @@ from Src.Dtos.nomenclature_dto import nomenclature_dto
 class nomenclature_model(entity_model):
     __group: group_model = None
     __range: range_model = None
-
-   
+  
     """
     Группа номенклатуры
     """
@@ -22,7 +21,7 @@ class nomenclature_model(entity_model):
     @group.setter
     def group(self, value: group_model):
         validator.validate(value,entity_model )
-        self.__group = value    
+        self.__group = value
 
     """
     Единица измерения
@@ -30,7 +29,7 @@ class nomenclature_model(entity_model):
     @property
     def range(self) -> range_model:
         return self.__range
-    
+   
     @range.setter
     def range(self, value: range_model):
         validator.validate(value, range_model)
@@ -48,7 +47,7 @@ class nomenclature_model(entity_model):
         item.group = group
         item.range = range
         return item
-    
+   
     """
     Фабричный метод из Dto
     """
@@ -56,29 +55,23 @@ class nomenclature_model(entity_model):
     def from_dto(dto:nomenclature_dto, cache:dict):
         validator.validate(dto, nomenclature_dto)
         validator.validate(cache, dict)
-        range =  cache[ dto.range_id ] if dto.range_id in cache else None
-        category =  cache[ dto.category_id] if dto.category_id in cache else None
-        item  = nomenclature_model.create(dto.name, category, range)
+        range = cache[ dto.range_id ] if dto.range_id in cache else None
+        category = cache[ dto.category_id] if dto.category_id in cache else None
+        item = nomenclature_model.create(dto.name, category, range)
+        if dto.id.strip() != "":
+            item.unique_code = dto.id
         return item
-    
+   
     """
     Перевести домсенную модель в Dto
     """
     def to_dto(self) -> nomenclature_dto:
         dto = nomenclature_dto()
-        if self.__group  is not None:
+        if self.__group is not None:
             dto.category_id = self.__group.unique_code
         if self.__range is not None:
             dto.range_id = self.__range.unique_code
 
         dto.name = self.name
-        dto.id = self.unique_code        
-
-        return dto    
-
-
-
-
-
-        
-    
+        dto.id = self.unique_code
+        return dto

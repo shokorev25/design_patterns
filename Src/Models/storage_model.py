@@ -15,7 +15,7 @@ class storage_model(entity_model):
     @property
     def address(self) -> str:
         return self.__address.strip()
-    
+   
     @address.setter
     def address(self, value:str):
         validator.validate(value, str)
@@ -32,10 +32,10 @@ class storage_model(entity_model):
         item = storage_model()
         item.name = dto.name
         item.address = dto.address
-        item.unique_code = dto.id
+        if dto.id.strip() != "":
+            item.unique_code = dto.id
         return item
-    
-
+   
     """
     Фабричный метод для первода в dto
     """
@@ -45,5 +45,3 @@ class storage_model(entity_model):
         dto.address = self.address
         dto.id = self.unique_code
         return dto
-
-    
