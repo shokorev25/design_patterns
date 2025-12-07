@@ -1,9 +1,13 @@
 {
-    "company":
-    {
-        "name":"Рога и копыта",
-        "inn":123456789
-    },
-    "default_format":"markdown",
-    "block_period":"2025-02-10"
+  "company": {
+    "name": "Рога и копыта",
+    "inn": 123456789
+  },
+  "default_format": "markdown",
+  "block_period": "2025-02-10",
+  "logging": {
+    "min_level": "DEBUG",
+    "output": "file",
+    "file_name": "system.log"
+  }
 }
