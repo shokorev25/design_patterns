@@ -32,7 +32,7 @@ class event_type:
             result.append(key)
 
         return result
-   
+    
     @staticmethod
     def delete_group() -> str:
         return "delete_group"
@@ -48,3 +48,31 @@ class event_type:
     @staticmethod
     def delete_storage() -> str:
         return "delete_storage"
+
+    @staticmethod
+    def log_debug() -> str:
+        return "log_debug"
+
+    @staticmethod
+    def log_info() -> str:
+        return "log_info"
+
+    @staticmethod
+    def log_error() -> str:
+        return "log_error"
+
+    @staticmethod
+    def web_call() -> str:
+        return "web_call"
+
+    @staticmethod
+    def crud_operation() -> str:
+        return "crud_operation"
+
+    @staticmethod
+    def settings_change() -> str:
+        return "settings_change"
+
+    @staticmethod
+    def storage_operation() -> str:
+        return "storage_operation"

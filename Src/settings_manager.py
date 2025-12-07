@@ -8,6 +8,10 @@ import json
 from datetime import datetime
 from Src.Core.abstract_manager import abstract_manager
 from Src.Logics.convert_factory import convert_factory
+from Src.Core.observe_service import observe_service
+from Src.Core.event_type import event_type
+from Src.Core.log_level import log_level
+
 ####################################################3
 # Менеджер настроек.
 # Предназначен для управления настройками и хранения параметров приложения
@@ -36,10 +40,11 @@ class settings_manager(abstract_manager):
             raise operation_exception("Не найден файл настроек!")
 
         try:
-            with open( self.file_name, 'r') as file_instance:
+            with open( self.file_name, 'r', encoding='utf-8') as file_instance:
                 settings = json.load(file_instance)
 
                 # Реквизиты оргаизации
+                result = True
                 if "company" in settings.keys():
                     data = settings["company"]
                     result = self.__deserialize(data)
@@ -56,9 +61,32 @@ class settings_manager(abstract_manager):
                     date_format = "%Y-%m-%d"
                     date = datetime.strptime(data, date_format)
                     self.__settings.block_period = date
+
+                if "logging" in settings.keys():
+                    logging = settings["logging"]
+                    observe_service.create_event(event_type.settings_change(), {
+                        'level': log_level.INFO,
+                        'message': 'Logging settings loaded',
+                        'context': {
+                            'min_level': logging.get('min_level'),
+                            'output': logging.get('output'),
+                            'file_name': logging.get('file_name')
+                        }
+                    })
+
+                observe_service.create_event(event_type.log_info(), {
+                    'level': log_level.INFO,
+                    'message': 'Settings loaded successfully',
+                    'context': {'file': self.file_name}
+                })
                 return result
             return False
-        except:
+        except Exception as ex:
+            observe_service.create_event(event_type.log_error(), {
+                'level': log_level.ERROR,
+                'message': 'Settings load failed',
+                'context': {'file': self.file_name, 'error': str(ex)}
+            })
             return False
        
     # Обработать полученный словарь
@@ -93,8 +121,26 @@ class settings_manager(abstract_manager):
         data['default_format'] = self.settings.default_response_format
         data['block_period'] = self.settings.block_period.strftime("%Y-%m-%d")
         try:
+            with open(self.file_name, 'r', encoding='utf-8') as f:
+                existing = json.load(f)
+        except:
+            existing = {}
+        if 'logging' in existing:
+            data['logging'] = existing['logging']
+
+        try:
             with open(self.file_name, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
+            observe_service.create_event(event_type.log_info(), {
+                'level': log_level.INFO,
+                'message': 'Settings saved successfully',
+                'context': {'file': self.file_name}
+            })
             return True
-        except:
+        except Exception as ex:
+            observe_service.create_event(event_type.log_error(), {
+                'level': log_level.ERROR,
+                'message': 'Settings save failed',
+                'context': {'file': self.file_name, 'error': str(ex)}
+            })
             return False
